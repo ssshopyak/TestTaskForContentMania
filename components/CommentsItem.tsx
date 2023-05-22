@@ -7,48 +7,37 @@ import {
   TextInput,
 } from 'react-native';
 import {
-  deletePost,
-  deleteServerPost,
-  updatePost,
-  updatePosts,
-} from '../store/postSlice';
-import {Post} from '../store/postSlice';
+  Comments,
+  deleteComment,
+  deleteServerComments,
+  updateComment,
+  updateComments,
+} from '../store/commentsSlice';
 import {width} from '../utils/screen';
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from '../store/store';
-import {useNavigation} from '@react-navigation/native';
 
-const PostListItem: FunctionComponent<{post: Post}> = ({post}) => {
+const CommentsItem: FunctionComponent<{comments: Comments}> = ({comments}) => {
   const [isEditable, setIsEditable] = useState(false);
-  const [title, setTitle] = useState(post.title);
-  const [body, setBody] = useState(post.body);
-  const navigation = useNavigation();
+  const [text, setText] = useState(comments.text);
   const dispatch = useDispatch<AppDispatch>();
-  const goToPostDetail = () => {
-    navigation.navigate(
-      'Posts' as never,
-      {
-        post: post,
-      } as never,
-    );
-  };
   const toEditPost = () => {
     setIsEditable(!isEditable);
   };
   const toUpdatePost = () => {
     setIsEditable(false);
-    const postID = post.id;
-    dispatch(updatePosts({title: title, bodyText: body, postId: postID}));
-    dispatch(updatePost({title: title, bodyText: body, postId: postID}));
+    const postID = comments.postId;
+    dispatch(updateComments({text: text, id: comments.id, postId: postID}));
+    dispatch(updateComment({text: text, id: comments.id, postId: postID}));
   };
   const toDeletePost = () => {
-    const postID = post.id;
-    dispatch(deleteServerPost(postID));
-    dispatch(deletePost(postID));
+    const postID = comments.postId;
+    const ID = comments.id;
+    dispatch(deleteServerComments({postId: postID, id: ID}));
+    dispatch(deleteComment(ID));
   };
   const toCancelEditing = () => {
-    setTitle(post.title);
-    setBody(post.body);
+    setText(comments.text);
     setIsEditable(false);
   };
   return (
@@ -58,28 +47,23 @@ const PostListItem: FunctionComponent<{post: Post}> = ({post}) => {
           <TextInput
             editable
             multiline
-            onChangeText={(text: any) => setTitle(text)}
-            value={title}
-            style={style.inputs}
-          />
-          <TextInput
-            editable
-            multiline
-            onChangeText={(text: any) => setBody(text)}
-            value={body}
+            onChangeText={(texts: any) => setText(texts)}
+            value={text}
             style={style.inputs}
           />
         </>
       ) : (
         <>
-          <Text style={style.nameText}>{title}</Text>
-          <Text style={style.nameText}>{body}</Text>
+          <Text style={style.nameText}>{text}</Text>
         </>
       )}
+
       <View style={style.editButtonContainer}>
-        <TouchableOpacity onPress={isEditable ? toUpdatePost : goToPostDetail}>
-          <Text style={style.buttons}>{isEditable ? 'Save' : 'More'}</Text>
-        </TouchableOpacity>
+        {isEditable ? (
+          <TouchableOpacity onPress={toUpdatePost}>
+            <Text style={style.buttons}>{'Save'}</Text>
+          </TouchableOpacity>
+        ) : null}
         <TouchableOpacity onPress={isEditable ? toCancelEditing : toEditPost}>
           <Text style={style.buttons}>{isEditable ? 'Cancel' : 'Edit'}</Text>
         </TouchableOpacity>
@@ -91,6 +75,10 @@ const PostListItem: FunctionComponent<{post: Post}> = ({post}) => {
   );
 };
 const style = StyleSheet.create({
+  inputs: {
+    color: '#F4FEFD',
+    marginHorizontal: 10,
+  },
   container: {
     width: width * 0.9,
     margin: 10,
@@ -100,8 +88,8 @@ const style = StyleSheet.create({
     padding: 5,
   },
   nameText: {
-    color: '#F4FEFD',
-    padding: 10,
+    color: '#f4fefd',
+    padding: 15,
   },
   buttons: {
     margin: 5,
@@ -117,19 +105,6 @@ const style = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  deleteButtons: {
-    position: 'absolute',
-    backgroundColor: '#0EF6CC',
-    padding: 10,
-    borderRadius: 8,
-    zIndex: 1,
-    right: 5,
-    top: 5,
-  },
-  inputs: {
-    color: '#F4FEFD',
-    marginHorizontal: 10,
-  },
 });
 
-export default PostListItem;
+export default CommentsItem;
